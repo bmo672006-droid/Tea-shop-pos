@@ -1,0 +1,235 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  name         String
+  pin          String   @unique // 4-digit pin, unique and auto-generated for waiters
+  role         String   // 'SUPER_ADMIN', 'MANAGER', 'COUNTER', 'WAITER'
+  restaurantId String   @default("default") // Single restaurant for now
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  orders              Order[]
+  deliveredItems      OrderItem[] // Items delivered by this user
+  auditLogs           AuditLog[]
+  adminAuditLogs      AdminAuditLog[] // Admin management audit logs
+  initiatedPayments   Payment[]   @relation("InitiatedPayments")
+  confirmedPayments   Payment[]   @relation("ConfirmedPayments")
+  waiterSessions      WaiterSession[] // Mobile device sessions for this waiter
+}
+
+model AuthUser {
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  image         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  sessions AuthSession[]
+  accounts AuthAccount[]
+}
+
+model AuthSession {
+  id        String   @id @default(uuid())
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+
+  user AuthUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model AuthAccount {
+  id                    String    @id @default(uuid())
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user AuthUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model AuthVerification {
+  id         String   @id @default(uuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+}
+
+model Table {
+  id             String  @id @default(uuid())
+  number         Int     @unique
+  capacity       Int
+  status         String // 'AVAILABLE', 'OCCUPIED', 'CLEANING'
+  currentOrderId String?
+
+  // Relations
+  orders Order[]
+}
+
+model Order {
+  id            String    @id @default(uuid())
+  tableId       String? // nullable for parcel
+  waiterId      String
+  status        String // 'PENDING', 'COOKING', 'READY', 'COMPLETED'
+  type          String // 'DINE_IN', 'PARCEL'
+  totalAmount   Float     @default(0.0)
+  createdAt     DateTime  @default(now())
+  completedAt   DateTime?
+  paymentStatus String    @default("PENDING") // 'PENDING', 'PENDING_CONFIRMATION', 'CONFIRMED', 'CANCELLED'
+
+  // Relations
+  table     Table?      @relation(fields: [tableId], references: [id])
+  waiter    User        @relation(fields: [waiterId], references: [id])
+  items     OrderItem[]
+  auditLogs AuditLog[]
+  payments  Payment[]
+
+  // Note: Prisma SQLite does not support partial unique indexes. 
+  // To enforce "One active order per table (unique constraint on tableId where status != COMPLETED)"
+  // you will need to handle this in application logic.
+
+  @@index([tableId])
+  @@index([waiterId])
+}
+
+model OrderItem {
+  id          String    @id @default(uuid())
+  orderId     String
+  menuItemId  String
+  quantity    Int
+  price       Float
+  status      String // 'PENDING', 'COOKING', 'READY', 'DELIVERED'
+  notes       String?
+  createdAt   DateTime  @default(now())
+  deliveredAt DateTime?
+  deliveredBy String?
+
+  // Relations
+  // Cascade delete handling for order items
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem  MenuItem @relation(fields: [menuItemId], references: [id])
+  deliverer User?    @relation(fields: [deliveredBy], references: [id])
+
+  @@index([orderId])
+}
+
+model MenuItem {
+  id              String  @id @default(uuid())
+  name            String
+  price           Float
+  category        String
+  preparationTime Int // minutes
+  isAvailable     Boolean @default(true)
+
+  // Relations
+  orderItems OrderItem[]
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String
+  action    String // 'CREATE_ORDER', 'MODIFY_ORDER', 'DELIVER_ITEM', 'PAYMENT_INIT', 'PAYMENT_CONFIRM'
+  orderId   String?
+  details   String // JSON string, stored as String because SQLite doesn't support the Prisma Json type
+  timestamp DateTime @default(now())
+
+  // Relations
+  user  User   @relation(fields: [userId], references: [id])
+  order Order? @relation(fields: [orderId], references: [id])
+
+  @@index([userId])
+  @@index([orderId])
+}
+
+model AdminAuditLog {
+  id          String   @id @default(uuid())
+  adminId     String   // Admin who performed the action
+  action      String   // 'CREATE_ADMIN', 'UPDATE_ADMIN', 'DELETE_ADMIN', 'DEACTIVATE_ADMIN', 'ACTIVATE_ADMIN', 'CREATE_WAITER', 'UPDATE_WAITER', 'DELETE_WAITER'
+  targetId    String?  // ID of the user being managed (if applicable)
+  targetRole  String?  // Role of the target user
+  changes     String   // JSON string of what changed
+  details     String?  // Additional details
+  timestamp   DateTime @default(now())
+
+  // Relations
+  admin User @relation(fields: [adminId], references: [id])
+
+  @@index([adminId])
+  @@index([targetId])
+  @@index([timestamp])
+}
+
+model Payment {
+  id          String   @id @default(uuid())
+  orderId     String
+  amount      Float
+  method      String // 'CASH', 'CARD', 'UPI'
+  status      String   @default("PENDING") // 'PENDING', 'CONFIRMED'
+  initiatedBy String
+  confirmedBy String?
+  createdAt   DateTime @default(now())
+
+  // Relations
+  order     Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  initiator User  @relation("InitiatedPayments", fields: [initiatedBy], references: [id])
+  confirmer User? @relation("ConfirmedPayments", fields: [confirmedBy], references: [id])
+
+  @@index([orderId])
+}
+
+model WaiterSession {
+  id           String   @id @default(uuid())
+  waiterId     String
+  deviceId     String   // Unique device identifier from mobile app
+  pin          String   // The PIN used to login
+  isActive     Boolean  @default(true)
+  lastSyncAt   DateTime @default(now()) // Last time device checked in
+  createdAt    DateTime @default(now())
+  destroyedAt  DateTime? // When session was manually destroyed from admin
+
+  // Device info
+  deviceName   String?  // Device model/name
+  deviceOS     String?  // iOS, Android
+  ipAddress    String?
+  userAgent    String?
+
+  // Relations
+  waiter User @relation(fields: [waiterId], references: [id], onDelete: Cascade)
+
+  @@index([waiterId])
+  @@index([deviceId])
+  @@index([pin])
+  @@unique([waiterId, deviceId]) // One device session per waiter
+}

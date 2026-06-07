@@ -638,6 +638,7 @@ export type OrderItemCreateOrConnectWithoutDelivererInput = {
 
 export type OrderItemCreateManyDelivererInputEnvelope = {
   data: Prisma.OrderItemCreateManyDelivererInput | Prisma.OrderItemCreateManyDelivererInput[]
+  skipDuplicates?: boolean
 }
 
 export type OrderItemUpsertWithWhereUniqueWithoutDelivererInput = {
@@ -703,6 +704,7 @@ export type OrderItemCreateOrConnectWithoutOrderInput = {
 
 export type OrderItemCreateManyOrderInputEnvelope = {
   data: Prisma.OrderItemCreateManyOrderInput | Prisma.OrderItemCreateManyOrderInput[]
+  skipDuplicates?: boolean
 }
 
 export type OrderItemUpsertWithWhereUniqueWithoutOrderInput = {
@@ -752,6 +754,7 @@ export type OrderItemCreateOrConnectWithoutMenuItemInput = {
 
 export type OrderItemCreateManyMenuItemInputEnvelope = {
   data: Prisma.OrderItemCreateManyMenuItemInput | Prisma.OrderItemCreateManyMenuItemInput[]
+  skipDuplicates?: boolean
 }
 
 export type OrderItemUpsertWithWhereUniqueWithoutMenuItemInput = {
@@ -1682,6 +1685,7 @@ export type OrderItemCreateManyArgs<ExtArgs extends runtime.Types.Extensions.Int
    * The data used to create many OrderItems.
    */
   data: Prisma.OrderItemCreateManyInput | Prisma.OrderItemCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1700,6 +1704,7 @@ export type OrderItemCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Exten
    * The data used to create many OrderItems.
    */
   data: Prisma.OrderItemCreateManyInput | Prisma.OrderItemCreateManyInput[]
+  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */

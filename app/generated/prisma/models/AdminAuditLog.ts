@@ -452,6 +452,7 @@ export type AdminAuditLogCreateOrConnectWithoutAdminInput = {
 
 export type AdminAuditLogCreateManyAdminInputEnvelope = {
   data: Prisma.AdminAuditLogCreateManyAdminInput | Prisma.AdminAuditLogCreateManyAdminInput[]
+  skipDuplicates?: boolean
 }
 
 export type AdminAuditLogUpsertWithWhereUniqueWithoutAdminInput = {
@@ -1264,6 +1265,7 @@ export type AdminAuditLogCreateManyArgs<ExtArgs extends runtime.Types.Extensions
    * The data used to create many AdminAuditLogs.
    */
   data: Prisma.AdminAuditLogCreateManyInput | Prisma.AdminAuditLogCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1282,6 +1284,7 @@ export type AdminAuditLogCreateManyAndReturnArgs<ExtArgs extends runtime.Types.E
    * The data used to create many AdminAuditLogs.
    */
   data: Prisma.AdminAuditLogCreateManyInput | Prisma.AdminAuditLogCreateManyInput[]
+  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */

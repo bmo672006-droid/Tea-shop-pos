@@ -1016,6 +1016,7 @@ export type AuthVerificationCreateManyArgs<ExtArgs extends runtime.Types.Extensi
    * The data used to create many AuthVerifications.
    */
   data: Prisma.AuthVerificationCreateManyInput | Prisma.AuthVerificationCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1034,6 +1035,7 @@ export type AuthVerificationCreateManyAndReturnArgs<ExtArgs extends runtime.Type
    * The data used to create many AuthVerifications.
    */
   data: Prisma.AuthVerificationCreateManyInput | Prisma.AuthVerificationCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**

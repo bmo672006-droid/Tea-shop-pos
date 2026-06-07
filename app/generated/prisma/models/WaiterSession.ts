@@ -554,6 +554,7 @@ export type WaiterSessionCreateOrConnectWithoutWaiterInput = {
 
 export type WaiterSessionCreateManyWaiterInputEnvelope = {
   data: Prisma.WaiterSessionCreateManyWaiterInput | Prisma.WaiterSessionCreateManyWaiterInput[]
+  skipDuplicates?: boolean
 }
 
 export type WaiterSessionUpsertWithWhereUniqueWithoutWaiterInput = {
@@ -1410,6 +1411,7 @@ export type WaiterSessionCreateManyArgs<ExtArgs extends runtime.Types.Extensions
    * The data used to create many WaiterSessions.
    */
   data: Prisma.WaiterSessionCreateManyInput | Prisma.WaiterSessionCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1428,6 +1430,7 @@ export type WaiterSessionCreateManyAndReturnArgs<ExtArgs extends runtime.Types.E
    * The data used to create many WaiterSessions.
    */
   data: Prisma.WaiterSessionCreateManyInput | Prisma.WaiterSessionCreateManyInput[]
+  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */

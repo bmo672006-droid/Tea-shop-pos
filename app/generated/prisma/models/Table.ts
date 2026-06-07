@@ -1186,6 +1186,7 @@ export type TableCreateManyArgs<ExtArgs extends runtime.Types.Extensions.Interna
    * The data used to create many Tables.
    */
   data: Prisma.TableCreateManyInput | Prisma.TableCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1204,6 +1205,7 @@ export type TableCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extension
    * The data used to create many Tables.
    */
   data: Prisma.TableCreateManyInput | Prisma.TableCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
